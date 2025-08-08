@@ -6,7 +6,7 @@ impl App{
             &painter,
             BoxType::Corners,
             Vector2 {
-                x: 200.0,
+                x: 2000.0,
                 y: 200.0
             },
             50.0,

@@ -8,6 +8,8 @@ mod app;
 
 use app::app::App;
 
+use crate::app::config::AppConfig;
+
 
 fn main() {
     let proc = proc_mem::Process::with_name("Code.exe").unwrap();
@@ -17,6 +19,7 @@ fn main() {
     let app = App {
         init: false,
         exit: false,
+        config: AppConfig::from_file("configs/config1.toml"),
         window_size: [0;2],
         window_pos: [0;2],
         game_hwnd: hwnd,

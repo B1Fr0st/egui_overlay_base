@@ -46,8 +46,6 @@ impl EguiOverlay for App {
         //hide overlay from taskbar and alt+tab list
         if !self.init {
             self.init = true;
-
-            glfw_backend.window.set_title("FPSChess Cheat");
             unsafe { ShowWindow(glfw_backend.window.get_win32_window() as winapi::shared::windef::HWND, SW_HIDE) };
             unsafe { SetWindowLongA(glfw_backend.window.get_win32_window() as winapi::shared::windef::HWND, GWL_EXSTYLE, WS_EX_TOOLWINDOW as i32) };
             unsafe { ShowWindow(glfw_backend.window.get_win32_window() as winapi::shared::windef::HWND, SW_SHOW) };
@@ -73,7 +71,7 @@ impl EguiOverlay for App {
         egui_context.set_visuals(visuals);
 
         //windows go here!!
-        egui::Window::new("Placeholder").show(egui_context, |ui| {
+        egui::Window::new("Placeholder").default_pos(Pos2::new(1000.0,1000.0)).show(egui_context, |ui| {
             ui.set_width(300.0);
             ui.label("Made by B1Fr0st");
             if ui.button("exit").clicked(){
@@ -81,7 +79,7 @@ impl EguiOverlay for App {
             }
         });
 
-        //main game logic loop
+        //main game logic loop goes here!!!!
         let monitor = unsafe { MonitorFromWindow(self.game_hwnd, MONITOR_DEFAULTTONEAREST) };
         let mut monitor_info: MONITORINFO = unsafe { std::mem::zeroed() };
         monitor_info.cbSize = std::mem::size_of::<MONITORINFO>() as u32;
