@@ -1,5 +1,6 @@
+use device_query::DeviceQuery;
 use egui_overlay::EguiOverlay;
-use egui::{Color32, LayerId, Pos2, Rect, Vec2};
+use egui::{Color32, LayerId, Pos2, Rect, Rounding, Vec2};
 use winapi::um::winuser::{GetMonitorInfoA, GetWindowRect, IsWindow, MonitorFromWindow, SetWindowLongA, ShowWindow, GWL_EXSTYLE, MONITORINFO, MONITOR_DEFAULTTONEAREST, SW_HIDE, SW_SHOW, WS_EX_TOOLWINDOW };
 
 use crate::app::app::App;
@@ -11,6 +12,13 @@ impl EguiOverlay for App {
             _default_gfx_backend: &mut egui_render_three_d::ThreeDBackend,
             glfw_backend: &mut egui_window_glfw_passthrough::GlfwBackend,
         ) {
+        
+        let keys = self.device_state.get_keys();
+        if keys.contains(&self.toggle_key){
+            self.visible = !self.visible;
+            std::thread::sleep(std::time::Duration::from_millis(200));
+        }
+
         //if game is closed or exit is set, quit
         if self.exit || unsafe{IsWindow(self.game_hwnd) == 0} {
             glfw_backend.window.set_should_close(true);
@@ -68,22 +76,24 @@ impl EguiOverlay for App {
             color: Color32::from_rgb(0, 0, 0),
         };
 
+        visuals.window_rounding = Rounding::same(0.0);
+
+        visuals.window_fill = Color32::BLACK;
+        visuals.window_stroke = egui::Stroke { width: 0.5, color: Color32::DARK_BLUE };
+
+        visuals.override_text_color = Some(Color32::WHITE);
+
         egui_context.set_visuals(visuals);
 
-        //windows go here!!
-        egui::Window::new("Placeholder").default_pos(Pos2::new(1000.0,1000.0)).show(egui_context, |ui| {
-            ui.set_width(300.0);
-            ui.label("Made by B1Fr0st");
-            if ui.button("exit").clicked(){
-                self.exit = true;
-            }
-        });
+        if self.visible{
+            self.gui(egui_context);
+        }
 
-        //main game logic loop goes here!!!!
+        //make sure painter obj is properly sized (probably not super necessary to run every tick?)
         let monitor = unsafe { MonitorFromWindow(self.game_hwnd, MONITOR_DEFAULTTONEAREST) };
-        let mut monitor_info: MONITORINFO = unsafe { std::mem::zeroed() };
-        monitor_info.cbSize = std::mem::size_of::<MONITORINFO>() as u32;
-        unsafe { GetMonitorInfoA(monitor, &mut monitor_info as *mut MONITORINFO) };
+        self.monitor_info = unsafe { std::mem::zeroed() };
+        self.monitor_info.cbSize = std::mem::size_of::<MONITORINFO>() as u32;
+        unsafe { GetMonitorInfoA(monitor, &mut self.monitor_info as *mut MONITORINFO) };
         let painter = egui::Painter::new(
             egui_context.clone(),
             LayerId::debug(),
@@ -93,11 +103,13 @@ impl EguiOverlay for App {
                     y:0.0,
                 },
                 max: Pos2 {
-                    x:(monitor_info.rcMonitor.right - monitor_info.rcMonitor.left) as f32,
-                    y:(monitor_info.rcMonitor.bottom - monitor_info.rcMonitor.top) as f32,
+                    x:(self.monitor_info.rcMonitor.right - self.monitor_info.rcMonitor.left) as f32,
+                    y:(self.monitor_info.rcMonitor.bottom - self.monitor_info.rcMonitor.top) as f32,
                 }
             },
         );
+        //main game logic loop goes here!!!!
+
         self.mock_esp(painter.clone());
 
         //set passthrough enabling and request egui_repaint

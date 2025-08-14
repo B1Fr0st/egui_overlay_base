@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize,Serialize};
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AppConfig{
     pub window_positions:HashMap<String, [i32;2]>
