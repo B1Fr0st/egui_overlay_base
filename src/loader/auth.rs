@@ -51,7 +51,7 @@ impl crate::loader::app::MyApp {
                         LicenseResult::Error(error) => {
                             self.failed_reason = error;
                             self.license = String::new();
-                            self.ui_state = UiState::LicenseInput;
+                            self.ui_state = UiState::Error;
                         }
                     }
                 }
@@ -61,9 +61,9 @@ impl crate::loader::app::MyApp {
                 Err(mpsc::TryRecvError::Disconnected) => {
                     // Thread panicked or channel closed
                     self.license_receiver = None;
-                    self.failed_reason = "License verification failed unexpectedly".to_string();
+                    self.failed_reason = "Error: 0xA011".to_string();
                     self.license = String::new();
-                    self.ui_state = UiState::LicenseInput;
+                    self.ui_state = UiState::Error;
                 }
             }
         }

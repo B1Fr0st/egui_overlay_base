@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 impl crate::app::app::App{
     pub fn read<T>(&self,address:usize) -> Option<T> where T:Default {
         match self.game_proc.read_mem::<T>(address) {

@@ -109,6 +109,7 @@ impl EguiOverlay for App {
             },
         );
         //main game logic loop goes here!!!!
+        self.debug(format!("game base address: 0x{:x}",self.game_proc.process_base_address));
 
         self.mock_esp(painter.clone());
 

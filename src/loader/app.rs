@@ -1,8 +1,9 @@
-use eframe::egui::{self, vec2, Color32, RichText, Style};
+use eframe::egui::{self, include_image, vec2, Color32, ImageButton, Pos2, Rect, RichText, Stroke, Style};
+use core::f32;
 use std::sync::mpsc;
 
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub(crate) struct MyApp {
     pub ui_state: UiState,
     frame: u64,
@@ -12,12 +13,13 @@ pub(crate) struct MyApp {
     // Channel for async license verification
     pub license_receiver: Option<mpsc::Receiver<LicenseResult>>,
 }
-#[derive(Default, PartialEq)]
+#[derive(Default, PartialEq, Debug)]
 pub enum UiState{
     Verifying,
     #[default]
     LicenseInput,
-    Verified
+    Verified,
+    Error
 }
 
 // Result type for license verification
@@ -66,6 +68,7 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui_extras::install_image_loaders(ctx);
         // Check for async license verification result
         self.check_license_result();
         self.frame += 1;
@@ -77,17 +80,27 @@ impl eframe::App for MyApp {
             offset: [0,0],
             blur: 0,
             spread: 0,
-            color: Color32::from_rgb(0, 0, 0),
+            color: Color32::BLACK,
         };
 
         visuals.popup_shadow = egui::epaint::Shadow {
             offset: [0,0],
             blur: 0,
             spread: 0,
-            color: Color32::from_rgb(0, 0, 0),
+            color: Color32::BLACK,
         };
 
-        visuals.panel_fill = Color32::from_rgb(0,0,0);
+        visuals.widgets.hovered.bg_stroke = Stroke::new(0.1,Color32::BLACK);
+        visuals.widgets.active.bg_stroke = Stroke::new(0.1,Color32::BLACK);
+        visuals.widgets.inactive.bg_stroke = Stroke::new(0.1,Color32::BLACK);
+
+        visuals.widgets.hovered.weak_bg_fill = Color32::from_rgb(110,0,0);
+        visuals.widgets.inactive.weak_bg_fill = Color32::from_rgb(32, 16, 16);
+
+        
+        visuals.extreme_bg_color = Color32::BLACK;
+
+        visuals.panel_fill = Color32::BLACK;
 
         visuals.window_stroke = egui::Stroke{width:0.5, color:Color32::from_rgb(54,1,63)};
 
@@ -96,6 +109,10 @@ impl eframe::App for MyApp {
         
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            let painter = ui.painter();
+
+            painter.rect_filled(Rect {min:[100.,100.].into(),max:[150.,150.].into()}, 0.0, Color32::from_rgba_unmultiplied(65, 125, 125, 100));
+
             match self.ui_state{
                 UiState::Verifying => {
                     ctx.style_mut(|s|{s.spacing.item_spacing = vec2(16.0, 64.0);s.spacing.indent=16.0;});
@@ -115,11 +132,12 @@ impl eframe::App for MyApp {
                             self.ui_state = UiState::Verifying;
                         }
                     else {
-                        ui.vertical_centered_justified(|ui|{
+                        ui.vertical_centered(|ui|{
                             ui.add_space(5.0);
                             ui.label(RichText::new("License Key").size(24.0).color(Color32::LIGHT_BLUE));
                             ui.add_space(10.0);
-                            ui.add(egui::TextEdit::singleline(&mut self.license).hint_text("KEYAUTH-xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx").char_limit(49));
+                            ui.add(egui::TextEdit::singleline(&mut self.license));
+                            self.license = self.license.trim().to_string();
                             if !self.license.is_empty() && !self.license_regex() {
                                 self.failed_reason = String::new();
                                 ui.label(RichText::new("License not in correct format!").size(16.0).color(Color32::LIGHT_RED));
@@ -128,6 +146,16 @@ impl eframe::App for MyApp {
                                 self.load = false;
                                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                             }
+
+                            let discord = ui.add_sized([50.0,50.0],ImageButton::new(include_image!("../../assets/discord.png")).frame(false));
+
+                            if discord.clicked(){
+                                ctx.open_url(egui::OpenUrl::new_tab( "https://google.com"));
+                            }
+                            if discord.hovered(){
+                                discord.with_new_rect(Rect::from_two_pos(Pos2::new(0.0,0.0), Pos2::new(100.0,100.0)));
+                            }
+
                         });
                     }
                     
@@ -145,6 +173,18 @@ impl eframe::App for MyApp {
                         self.load = false;
                         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                     }
+                },
+                UiState::Error => {
+                    ctx.style_mut(|s|{*s = Style::default()});
+                    ui.vertical_centered(|ui|{
+                        ui.add_space(50.0);
+                        ui.label(RichText::new(self.failed_reason.clone()).size(24.0).color(Color32::DARK_RED));
+                        ui.add_space(100.0);
+                        if ui.button("Exit").clicked() {
+                            self.load = false;
+                            ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                        }
+                    });
                 }
             }
         });

@@ -12,6 +12,17 @@ impl App{
             50.0,
             100.0,
             egui::Color32::WHITE
+        );
+        self.draw_box(
+            &painter,
+            BoxType::Outline,
+            Vector2 {
+                x: 1500.0,
+                y: 200.0
+            },
+            50.0,
+            100.0,
+            egui::Color32::WHITE
         )
     }
 }

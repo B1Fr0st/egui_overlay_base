@@ -1,5 +1,6 @@
-//#![windows_subsystem = "windows"]
-//no console window
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
+
+
 
 mod utils;
 mod models;
@@ -8,38 +9,26 @@ mod app;
 mod loader;
 
 use app::app::App;
-use eframe::egui::IconData;
-
-use crate::app::config::AppConfig;
 
 
 fn main() {
 
-    let options = eframe::NativeOptions {
-        viewport: eframe::egui::ViewportBuilder::default()
-        .with_inner_size([320.0, 240.0])
-        .with_decorations(false)
-        .with_active(true)
-        .with_taskbar(true)
-        ,//.with_icon(IconData::default()),
-        centered: true,
-        ..Default::default()
+    let proc = match proc_mem::Process::with_name("Code.exe") {
+        Ok(process) => {process},
+        Err(_) => {crate::loader::start::error("Game not running!");return;},
     };
-    eframe::run_native(
-        "Replace me!!!!!!!",
-        options,
-        Box::new(|_cc| Ok(Box::<loader::app::MyApp>::default())),
-    ).unwrap();
 
-    let proc = proc_mem::Process::with_name("Code.exe").unwrap();
+    let hwnd = match utils::windows::get_main_window_from_process_id(proc.process_id) {
+        Some(hwnd) => {hwnd},
+        None => {crate::loader::start::error("Error: 0xH011");return;},
+    };
 
-    let hwnd = utils::windows::get_main_window_from_process_id(proc.process_id).unwrap();
+    crate::loader::start::start();
 
     let app = App {
         init: false,
         exit: false,
         visible: true,
-        config: AppConfig::from_file("configs/config1.toml"),
         window_size: [0;2],
         window_pos: [0;2],
         game_hwnd: hwnd,

@@ -4,6 +4,7 @@ impl crate::app::app::App{
         egui::Window::new("Misc")
         .title_bar(false)
         .resizable(false)
+        .default_pos([300.0,1000.0])
         .show(context, |ui| {
             ui.set_width(300.0);
             ui.label("Made by B1Fr0st");

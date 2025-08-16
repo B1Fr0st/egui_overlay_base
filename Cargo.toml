@@ -21,3 +21,4 @@ serde_derive = "1.0.219"
 serde_toml = "0.0.1"
 winapi = { version = "0.3.9", features = ["winuser"] }
 keyauth = { git = "https://github.com/B1Fr0st/keyauth-rust.git", branch = "main" }
+egui_extras = { version = "0.32.1", features = ["all_loaders"] }

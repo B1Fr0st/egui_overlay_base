@@ -10,6 +10,7 @@ impl Default for Vector2 {
     }
 }
 
+#[allow(dead_code)]
 impl Vector2 {
     pub fn distance(&self, other: &Vector2) -> f32 {
         ((other.x - self.x).powi(2) + (other.y - self.y).powi(2)).sqrt()
