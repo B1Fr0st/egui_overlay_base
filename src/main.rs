@@ -13,21 +13,31 @@ use app::app::App;
 
 fn main() {
 
-    let proc = match proc_mem::Process::with_name("SurrounDead-Win64-Shipping.exe") {
+    let proc = match proc_mem::Process::with_name("Code.exe") {
         Ok(process) => {process},
-        Err(_) => {autherium_loader::loader::start::error("Game not running!");return;},
+        Err(_) => {crate::loader::start::error("Game not running!");return;},
     };
 
     let hwnd = match utils::windows::get_main_window_from_process_id(proc.process_id) {
         Some(hwnd) => {hwnd},
-        None => {autherium_loader::loader::start::error("Error: 0xH011");return;},
+        None => {crate::loader::start::error("Error: 0xH011");return;},
     };
 
-    //autherium_loader::loader::start::start();
+    crate::loader::start::start();
 
-    let app = App::new(hwnd, proc);
-    
-    //start actor reading thread
+    let app = App {
+        init: false,
+        exit: false,
+        visible: true,
+        window_size: [0;2],
+        window_pos: [0;2],
+        game_hwnd: hwnd,
+        game_proc: proc,
+        device_state: device_query::DeviceState::new(),
+        toggle_key: device_query::Keycode::Insert,
+        monitor_info: unsafe { std::mem::zeroed() },
+        debug: String::new(),
+    };
 
     egui_overlay::start(app);
 }

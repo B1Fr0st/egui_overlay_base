@@ -13,8 +13,8 @@ impl EguiOverlay for App {
             glfw_backend: &mut egui_window_glfw_passthrough::GlfwBackend,
         ) {
         
-        self.keys = self.device_state.get_keys();
-        if self.toggle_key.is_some() && self.keys.contains(&self.toggle_key.unwrap()) {
+        let keys = self.device_state.get_keys();
+        if keys.contains(&self.toggle_key){
             self.visible = !self.visible;
             std::thread::sleep(std::time::Duration::from_millis(200));
         }
@@ -109,11 +109,9 @@ impl EguiOverlay for App {
             },
         );
         //main game logic loop goes here!!!!
+        self.debug(format!("game base address: 0x{:x}",self.game_proc.process_base_address));
 
-        //self.mock_esp(painter.clone());
-        self.read_aactors();
-        self.esp(painter.clone());
-        self.apply_aimbot();
+        self.mock_esp(painter.clone());
 
         //set passthrough enabling and request egui_repaint
         if egui_context.wants_pointer_input() || egui_context.wants_keyboard_input() {

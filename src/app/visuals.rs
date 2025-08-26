@@ -1,7 +1,6 @@
 use crate::app::app::App;
 use crate::models::vector2::Vector2;
 
-#[derive(PartialEq, Clone, Debug)]
 pub enum BoxType{
     Outline,
     Corners
@@ -140,12 +139,4 @@ impl App {
         }
     }
     
-
-    pub fn draw_centered_box(&self, painter: &egui::Painter, box_type:BoxType, center: Vector2, width: f32, height: f32, color: egui::Color32) {
-        let top_left = Vector2 {
-            x: center.x - width / 2.0,
-            y: center.y - height / 2.0,
-        };
-        self.draw_box(painter, box_type, top_left, width, height, color);
-    }
 }
